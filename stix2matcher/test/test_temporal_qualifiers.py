@@ -4,10 +4,11 @@
 import pytest
 from stix2patterns.pattern import ParseException
 
-from stix2matcher.matcher import (_OVERLAP, _OVERLAP_NONE,
+from stix2matcher.matcher import match
+from stix2matcher.observation_helper import (_OVERLAP, _OVERLAP_NONE,
                                   _OVERLAP_TOUCH_INNER, _OVERLAP_TOUCH_OUTER,
                                   _OVERLAP_TOUCH_POINT, MatcherException,
-                                  _overlap, _timestamp_intervals_within, match)
+                                  _overlap, _timestamp_intervals_within)
 
 _observations = [
     {

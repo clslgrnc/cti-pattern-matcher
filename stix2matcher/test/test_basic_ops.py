@@ -1,6 +1,7 @@
 import pytest
 
-from stix2matcher.matcher import MatcherException, match
+from stix2matcher.exception import MatcherException
+from stix2matcher.matcher import match
 
 _observations = [
     {
