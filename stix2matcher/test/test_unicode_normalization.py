@@ -16,10 +16,10 @@ _observations = [
                     # and below.
                     "nfc": u"\u1e0d\u0307",
                     "nfd": u"d\u0323\u0307",
-                    "alt1": u"\u1e0b\u0323"
-                }
+                    "alt1": u"\u1e0b\u0323",
+                },
             }
-        }
+        },
     }
 ]
 
@@ -51,65 +51,41 @@ def _mismatched_kv_pairs():
                 yield k, v
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} LIKE '{}']".format(k, v)
-    for k, v in _all_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} LIKE '{}']".format(k, v) for k, v in _all_kv_pairs()])
 def test_unicode_normalization_like_match(pattern):
     assert match(pattern, _observations)
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} MATCHES '^{}$']".format(k, v)
-    for k, v in _all_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} MATCHES '^{}$']".format(k, v) for k, v in _all_kv_pairs()])
 def test_unicode_normalization_regex_match(pattern):
     assert match(pattern, _observations)
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} != '{}']".format(k, v)
-    for k, v in _mismatched_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} != '{}']".format(k, v) for k, v in _mismatched_kv_pairs()])
 def test_unicode_normalization_ne_match(pattern):
     assert match(pattern, _observations)
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} != '{}']".format(k, v)
-    for k, v in _matched_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} != '{}']".format(k, v) for k, v in _matched_kv_pairs()])
 def test_unicode_normalization_ne_nomatch(pattern):
     assert not match(pattern, _observations)
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} = '{}']".format(k, v)
-    for k, v in _matched_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} = '{}']".format(k, v) for k, v in _matched_kv_pairs()])
 def test_unicode_normalization_eq_match(pattern):
     assert match(pattern, _observations)
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} = '{}']".format(k, v)
-    for k, v in _mismatched_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} = '{}']".format(k, v) for k, v in _mismatched_kv_pairs()])
 def test_unicode_normalization_eq_nomatch(pattern):
     assert not match(pattern, _observations)
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} IN ('{}')]".format(k, v)
-    for k, v in _matched_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} IN ('{}')]".format(k, v) for k, v in _matched_kv_pairs()])
 def test_unicode_normalization_set_match(pattern):
     assert match(pattern, _observations)
 
 
-@pytest.mark.parametrize("pattern", [
-    u"[test:ddots.{} IN ('{}')]".format(k, v)
-    for k, v in _mismatched_kv_pairs()
-])
+@pytest.mark.parametrize("pattern", [u"[test:ddots.{} IN ('{}')]".format(k, v) for k, v in _mismatched_kv_pairs()])
 def test_unicode_normalization_set_nomatch(pattern):
     assert not match(pattern, _observations)

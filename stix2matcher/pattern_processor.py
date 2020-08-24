@@ -66,8 +66,10 @@ def _dereference_cyber_obs_objs(cyber_obs_objs, cyber_obs_obj_references, ref_pr
                     # Say "A value" if the property is a reference list,
                     # otherwise "The value".
                     u"A" if ref_prop_name.endswith(u"_refs") else u"The",
-                    ref_prop_name, referenced_obj_id
-                ))
+                    ref_prop_name,
+                    referenced_obj_id,
+                )
+            )
 
         if referenced_obj_id in cyber_obs_objs:
             dereferenced_cyber_obs_objs.append(cyber_obs_objs[referenced_obj_id])
@@ -84,10 +86,7 @@ def _unicode_escape(src):
     with io.StringIO() as dst:
         for c in src:
             ordc = ord(c)
-            dst.write(
-                c if ordc < 128
-                else u"\\u{:04x}".format(ordc)
-            )
+            dst.write(c if ordc < 128 else u"\\u{:04x}".format(ordc))
         return dst.getvalue()
 
 
@@ -146,17 +145,15 @@ class MatchListener(STIXPatternListener):
 
             number_observed = sdo["number_observed"]
             if number_observed < 1:
-                raise MatcherException("SDO with invalid number_observed "
-                                       "(must be >= 1): {}".format(
-                                        number_observed))
+                raise MatcherException(
+                    "SDO with invalid number_observed " "(must be >= 1): {}".format(number_observed)
+                )
 
-            self.__observations.extend(
-                itertools.repeat(sdo, number_observed)
-            )
+            self.__observations.extend(itertools.repeat(sdo, number_observed))
             self.__time_intervals.extend(
-                itertools.repeat((_str_to_datetime(sdo["first_observed"]),
-                                  _str_to_datetime(sdo["last_observed"])),
-                                 number_observed)
+                itertools.repeat(
+                    (_str_to_datetime(sdo["first_observed"]), _str_to_datetime(sdo["last_observed"])), number_observed
+                )
             )
 
         self.__verbose = verbose
@@ -345,18 +342,10 @@ class MatchListener(STIXPatternListener):
                     yield (lhs_binding + rhs_binding)
 
     def __latest_first_timestamp(self, binding):
-        return max(
-            self.__time_intervals[obs_id][0]
-            for obs_id in binding
-            if obs_id is not None
-        )
+        return max(self.__time_intervals[obs_id][0] for obs_id in binding if obs_id is not None)
 
     def __earliest_last_timestamp(self, binding):
-        return min(
-            self.__time_intervals[obs_id][1]
-            for obs_id in binding
-            if obs_id is not None
-        )
+        return min(self.__time_intervals[obs_id][1] for obs_id in binding if obs_id is not None)
 
     def exitObservationExpressionOr(self, ctx):
         """
@@ -426,14 +415,12 @@ class MatchListener(STIXPatternListener):
         if first_lhs_binding is not None:
             lhs_binding_none = (None,) * len(first_lhs_binding)
         else:
-            left_binding_size = _compute_expected_binding_size(
-                ctx.observationExpressionOr(0))
+            left_binding_size = _compute_expected_binding_size(ctx.observationExpressionOr(0))
             lhs_binding_none = (None,) * left_binding_size
         if first_rhs_binding is not None:
             rhs_binding_none = (None,) * len(first_rhs_binding)
         else:
-            right_binding_size = _compute_expected_binding_size(
-                ctx.observationExpressionOr(0))
+            right_binding_size = _compute_expected_binding_size(ctx.observationExpressionOr(0))
             rhs_binding_none = (None,) * right_binding_size
 
         def joined_bindings():
@@ -537,36 +524,29 @@ class MatchListener(STIXPatternListener):
         times the repeat count.
         """
 
-        rep_count = _literal_terminal_to_python_val(
-            ctx.repeatedQualifier().IntPosLiteral()
-        )
-        debug_label = u"exitObservationExpressionRepeated ({})".format(
-            rep_count
-        )
+        rep_count = _literal_terminal_to_python_val(ctx.repeatedQualifier().IntPosLiteral())
+        debug_label = u"exitObservationExpressionRepeated ({})".format(rep_count)
 
         bindings = self.__pop(debug_label)
 
         # Need to find all 'rep_count'-sized disjoint combinations of
         # bindings.
         if rep_count < 1:
-            raise MatcherException(u"Invalid repetition count: {}".format(
-                rep_count))
+            raise MatcherException(u"Invalid repetition count: {}".format(rep_count))
         elif rep_count == 1:
             # As an optimization, if rep_count is 1, we use the bindings
             # as-is.
             filtered_bindings = bindings
         else:
             # A generator of tuples goes in (bindings)
-            filtered_bindings = _filtered_combinations(bindings, rep_count,
-                                                       pre_filter=_disjoint)
+            filtered_bindings = _filtered_combinations(bindings, rep_count, pre_filter=_disjoint)
             # ... and a generator of tuples of tuples comes out
             # (filtered_bindings).  The following flattens each outer
             # tuple.  I could have also written a generic flattener, but
             # since this structure is predictable, I could do something
             # simpler.  Other code dealing with bindings doesn't expect any
             # nested structure, so I do the flattening here.
-            filtered_bindings = (tuple(itertools.chain.from_iterable(binding))
-                                 for binding in filtered_bindings)
+            filtered_bindings = (tuple(itertools.chain.from_iterable(binding)) for binding in filtered_bindings)
 
         self.__push(filtered_bindings, debug_label)
 
@@ -585,12 +565,7 @@ class MatchListener(STIXPatternListener):
 
         def check_within(binding):
             return _timestamp_intervals_within(
-                [
-                    self.__time_intervals[obs_id]
-                    for obs_id in binding
-                    if obs_id is not None
-                ],
-                duration
+                [self.__time_intervals[obs_id] for obs_id in binding if obs_id is not None], duration
             )
 
         filtered_bindings = filter(check_within, bindings)
@@ -620,10 +595,10 @@ class MatchListener(STIXPatternListener):
 
         def check_within(binding):
             return all(
-                    _overlap(start_time, stop_time, *self.__time_intervals[obs_id])
-                    in (_OVERLAP, _OVERLAP_TOUCH_OUTER)
-                    for obs_id in binding if obs_id is not None
-                )
+                _overlap(start_time, stop_time, *self.__time_intervals[obs_id]) in (_OVERLAP, _OVERLAP_TOUCH_OUTER)
+                for obs_id in binding
+                if obs_id is not None
+            )
 
         filtered_bindings = filter(check_within, bindings)
 
@@ -780,9 +755,7 @@ class MatchListener(STIXPatternListener):
         literal_value = _literal_terminal_to_python_val(literal_terminal)
         op_tok = ctx.EQ() or ctx.NEQ()
         debug_label = u"exitPropTestEqual ({}{} {})".format(
-            u"NOT " if ctx.NOT() else u"",
-            op_tok.getText(),
-            literal_terminal.getText()
+            u"NOT " if ctx.NOT() else u"", op_tok.getText(), literal_terminal.getText()
         )
 
         obs_values = self.__pop(debug_label)
@@ -792,20 +765,14 @@ class MatchListener(STIXPatternListener):
             # timestamp hackage: if we have a timestamp literal from the
             # pattern and a string from the json, try to interpret the json
             # value as a timestamp too.
-            if isinstance(literal_value, datetime.datetime) and \
-                    isinstance(value, six.text_type):
+            if isinstance(literal_value, datetime.datetime) and isinstance(value, six.text_type):
                 try:
                     value = _str_to_datetime(value)
                 except ValueError as e:
-                    six.raise_from(
-                        MatcherException(u"Invalid timestamp in JSON: {}".format(
-                            value
-                        )), e)
+                    six.raise_from(MatcherException(u"Invalid timestamp in JSON: {}".format(value)), e)
 
             result = False
-            eq_func = _get_table_symmetric(_COMPARE_EQ_FUNCS,
-                                           type(literal_value),
-                                           type(value))
+            eq_func = _get_table_symmetric(_COMPARE_EQ_FUNCS, type(literal_value), type(value))
             if eq_func is not None:
                 result = eq_func(value, literal_value)
 
@@ -843,9 +810,7 @@ class MatchListener(STIXPatternListener):
         literal_value = _literal_terminal_to_python_val(literal_terminal)
         op_tok = ctx.GT() or ctx.LT() or ctx.GE() or ctx.LE()
         debug_label = u"exitPropTestOrder ({}{} {})".format(
-            u"NOT " if ctx.NOT() else u"",
-            op_tok.getText(),
-            literal_terminal.getText()
+            u"NOT " if ctx.NOT() else u"", op_tok.getText(), literal_terminal.getText()
         )
 
         obs_values = self.__pop(debug_label)
@@ -855,19 +820,13 @@ class MatchListener(STIXPatternListener):
             # timestamp hackage: if we have a timestamp literal from the
             # pattern and a string from the json, try to interpret the json
             # value as a timestamp too.
-            if isinstance(literal_value, datetime.datetime) and \
-                    isinstance(value, six.text_type):
+            if isinstance(literal_value, datetime.datetime) and isinstance(value, six.text_type):
                 try:
                     value = _str_to_datetime(value)
                 except ValueError as e:
-                    six.raise_from(
-                        MatcherException(u"Invalid timestamp in JSON: {}".format(
-                            value
-                        )), e)
+                    six.raise_from(MatcherException(u"Invalid timestamp in JSON: {}".format(value)), e)
 
-            cmp_func = _get_table_symmetric(_COMPARE_ORDER_FUNCS,
-                                            type(literal_value),
-                                            type(value))
+            cmp_func = _get_table_symmetric(_COMPARE_ORDER_FUNCS, type(literal_value), type(value))
 
             if cmp_func is None:
                 return False
@@ -912,16 +871,13 @@ class MatchListener(STIXPatternListener):
           set of root Cyber Observable object IDs.  See _obs_map_prop_test().
         """
 
-        debug_label = u"exitPropTestSet{}".format(
-            u" (not)" if ctx.NOT() else u""
-        )
+        debug_label = u"exitPropTestSet{}".format(u" (not)" if ctx.NOT() else u"")
         s = self.__pop(debug_label)  # pop the set
         obs_values = self.__pop(debug_label)  # pop the observation values
 
         # Only need to check one member; exitSetLiteral() ensures that all
         # members of the set have the same type.
-        is_set_of_timestamps = s and \
-            isinstance(next(iter(s)), datetime.datetime)
+        is_set_of_timestamps = s and isinstance(next(iter(s)), datetime.datetime)
 
         def set_pred(value):
             # timestamp hackage: if we have a set of timestamp literals from
@@ -931,10 +887,7 @@ class MatchListener(STIXPatternListener):
                 try:
                     value = _str_to_datetime(value)
                 except ValueError as e:
-                    six.raise_from(
-                        MatcherException(u"Invalid timestamp in JSON: {}".format(
-                            value
-                        )), e)
+                    six.raise_from(MatcherException(u"Invalid timestamp in JSON: {}".format(value)), e)
 
             result = False
             try:
@@ -970,10 +923,7 @@ class MatchListener(STIXPatternListener):
         """
 
         operand_str = _literal_terminal_to_python_val(ctx.StringLiteral())
-        debug_label = u"exitPropTestLike ({}{})".format(
-            u"not " if ctx.NOT() else u"",
-            operand_str
-        )
+        debug_label = u"exitPropTestLike ({}{})".format(u"not " if ctx.NOT() else u"", operand_str)
 
         obs_values = self.__pop(debug_label)
 
@@ -1014,10 +964,7 @@ class MatchListener(STIXPatternListener):
         """
 
         regex_terminal = ctx.StringLiteral()
-        debug_label = u"exitPropTestRegex ({}{})".format(
-            u"not " if ctx.NOT() else u"",
-            regex_terminal.getText()
-        )
+        debug_label = u"exitPropTestRegex ({}{})".format(u"not " if ctx.NOT() else u"", regex_terminal.getText())
 
         obs_values = self.__pop(debug_label)
 
@@ -1076,10 +1023,7 @@ class MatchListener(STIXPatternListener):
         """
         subnet_str = _literal_terminal_to_python_val(ctx.StringLiteral())
 
-        debug_label = u"exitPropTestIsSubset ({}{})".format(
-            u"not " if ctx.NOT() else u"",
-            subnet_str
-        )
+        debug_label = u"exitPropTestIsSubset ({}{})".format(u"not " if ctx.NOT() else u"", subnet_str)
         obs_values = self.__pop(debug_label)
 
         def subnet_pred(value):
@@ -1112,10 +1056,7 @@ class MatchListener(STIXPatternListener):
         """
         ip_or_subnet_str = _literal_terminal_to_python_val(ctx.StringLiteral())
 
-        debug_label = u"exitPropTestIsSuperset ({}{})".format(
-            u"not " if ctx.NOT() else u"",
-            ip_or_subnet_str
-        )
+        debug_label = u"exitPropTestIsSuperset ({}{})".format(u"not " if ctx.NOT() else u"", ip_or_subnet_str)
         obs_values = self.__pop(debug_label)
 
         def contains_pred(value):
@@ -1214,14 +1155,11 @@ class MatchListener(STIXPatternListener):
                 dereferenced_cyber_obs_obj_map = {}
                 for cyber_obs_obj_id, references in six.iteritems(cyber_obs_obj_map):
                     dereferenced_cyber_obs_objs = _dereference_cyber_obs_objs(
-                        self.__observations[obs_idx]["objects"],
-                        references,
-                        prop_name
+                        self.__observations[obs_idx]["objects"], references, prop_name
                     )
 
                     if len(dereferenced_cyber_obs_objs) > 0:
-                        dereferenced_cyber_obs_obj_map[cyber_obs_obj_id] = \
-                            dereferenced_cyber_obs_objs
+                        dereferenced_cyber_obs_obj_map[cyber_obs_obj_id] = dereferenced_cyber_obs_objs
 
                 if len(dereferenced_cyber_obs_obj_map) > 0:
                     dereferenced_obs_map[obs_idx] = dereferenced_cyber_obs_obj_map
@@ -1240,23 +1178,18 @@ class MatchListener(STIXPatternListener):
                         if not isinstance(reference_list, list):
                             raise MatcherException(
                                 u"The value of reference list property '{}' was not "
-                                u"a list!  Got {}".format(
-                                    prop_name, reference_list
-                                ))
+                                u"a list!  Got {}".format(prop_name, reference_list)
+                            )
 
                         dereferenced_cyber_obs_objs = _dereference_cyber_obs_objs(
-                            self.__observations[obs_idx]["objects"],
-                            reference_list,
-                            prop_name
+                            self.__observations[obs_idx]["objects"], reference_list, prop_name
                         )
 
                         if len(dereferenced_cyber_obs_objs) > 0:
-                            dereferenced_cyber_obs_obj_lists.append(
-                                dereferenced_cyber_obs_objs)
+                            dereferenced_cyber_obs_obj_lists.append(dereferenced_cyber_obs_objs)
 
                     if len(dereferenced_cyber_obs_obj_lists) > 0:
-                        dereferenced_cyber_obs_obj_map[cyber_obs_obj_id] = \
-                            dereferenced_cyber_obs_obj_lists
+                        dereferenced_cyber_obs_obj_map[cyber_obs_obj_id] = dereferenced_cyber_obs_obj_lists
 
                 if len(dereferenced_cyber_obs_obj_map) > 0:
                     dereferenced_obs_map[obs_idx] = dereferenced_cyber_obs_obj_map
@@ -1289,8 +1222,7 @@ class MatchListener(STIXPatternListener):
         obs_val = self.__pop(debug_label)
 
         filtered_obs_map = _step_filter_observations(obs_val, prop_name)
-        dereferenced_obs_map = self.__dereference_objects(prop_name,
-                                                          filtered_obs_map)
+        dereferenced_obs_map = self.__dereference_objects(prop_name, filtered_obs_map)
 
         self.__push(dereferenced_obs_map, debug_label)
 
@@ -1307,8 +1239,7 @@ class MatchListener(STIXPatternListener):
         obs_val = self.__pop(debug_label)
 
         filtered_obs_map = _step_filter_observations(obs_val, prop_name)
-        dereferenced_obs_map = self.__dereference_objects(prop_name,
-                                                          filtered_obs_map)
+        dereferenced_obs_map = self.__dereference_objects(prop_name, filtered_obs_map)
 
         self.__push(dereferenced_obs_map, debug_label)
 
@@ -1318,9 +1249,7 @@ class MatchListener(STIXPatternListener):
         step.
         """
         if ctx.IntPosLiteral() or ctx.IntNegLiteral():
-            index = _literal_terminal_to_python_val(
-                ctx.IntPosLiteral() or ctx.IntNegLiteral()
-            )
+            index = _literal_terminal_to_python_val(ctx.IntPosLiteral() or ctx.IntNegLiteral())
             debug_label = u"exitIndexPathStep ({})".format(index)
             obs_val = self.__pop(debug_label)
 
@@ -1364,8 +1293,7 @@ class MatchListener(STIXPatternListener):
                 is_homogenous = False
 
             # bool is a subclass of int!
-            if not isinstance(literal_value, (int, float)) or \
-                    isinstance(literal_value, bool):
+            if not isinstance(literal_value, (int, float)) or isinstance(literal_value, bool):
                 has_only_numbers = False
 
             python_values.append(literal_value)
@@ -1382,8 +1310,7 @@ class MatchListener(STIXPatternListener):
                 is_homogenous = True
 
             if not is_homogenous:
-                raise MatcherException(u"Nonhomogenous set: {}".format(
-                    ctx.getText()))
+                raise MatcherException(u"Nonhomogenous set: {}".format(ctx.getText()))
         else:
             s = set()
 

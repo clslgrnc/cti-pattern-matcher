@@ -65,26 +65,12 @@ def _bin_str_equals(val1, val2):
 
 
 _COMPARE_EQ_FUNCS = {
-    int: {
-        int: operator.eq,
-        float: operator.eq
-    },
-    float: {
-        float: operator.eq
-    },
-    six.binary_type: {
-        six.binary_type: operator.eq,
-        six.text_type: _bin_str_equals
-    },
-    six.text_type: {
-        six.text_type: operator.eq
-    },
-    bool: {
-        bool: operator.eq
-    },
-    datetime.datetime: {
-        datetime.datetime: operator.eq
-    }
+    int: {int: operator.eq, float: operator.eq},
+    float: {float: operator.eq},
+    six.binary_type: {six.binary_type: operator.eq, six.text_type: _bin_str_equals},
+    six.text_type: {six.text_type: operator.eq},
+    bool: {bool: operator.eq},
+    datetime.datetime: {datetime.datetime: operator.eq},
 }
 
 
@@ -140,23 +126,11 @@ def _bin_str_compare(val1, val2):
 
 
 _COMPARE_ORDER_FUNCS = {
-    int: {
-        int: _cmp,
-        float: _cmp
-    },
-    float: {
-        float: _cmp
-    },
-    six.binary_type: {
-        six.binary_type: _cmp,
-        six.text_type: _bin_str_compare
-    },
-    six.text_type: {
-        six.text_type: _cmp
-    },
-    datetime.datetime: {
-        datetime.datetime: _cmp
-    }
+    int: {int: _cmp, float: _cmp},
+    float: {float: _cmp},
+    six.binary_type: {six.binary_type: _cmp, six.text_type: _bin_str_compare},
+    six.text_type: {six.text_type: _cmp},
+    datetime.datetime: {datetime.datetime: _cmp},
 }
 
 
@@ -240,8 +214,7 @@ def _step_into_objs(objs, step):
             # can't do key lookup in non-dicts
 
     else:
-        raise MatcherInternalError(
-            u"Unsupported step type: {}".format(type(step)))
+        raise MatcherInternalError(u"Unsupported step type: {}".format(type(step)))
 
     return stepped_cyber_obs_objs
 
@@ -340,12 +313,11 @@ def _literal_terminal_to_python_val(literal_terminal):
         try:
             python_value = coercer(token_text)
         except Exception as e:
-            six.raise_from(MatcherException(u"Invalid {}: {}".format(
-                STIXPatternParser.symbolicNames[token_type], token_text
-            )), e)
+            six.raise_from(
+                MatcherException(u"Invalid {}: {}".format(STIXPatternParser.symbolicNames[token_type], token_text)), e
+            )
     else:
-        raise MatcherInternalError(u"Unsupported literal type: {}".format(
-            STIXPatternParser.symbolicNames[token_type]))
+        raise MatcherInternalError(u"Unsupported literal type: {}".format(STIXPatternParser.symbolicNames[token_type]))
 
     return python_value
 
@@ -363,7 +335,7 @@ def _like_to_regex(like):
                 sbuf.write(u".")
             else:
                 if not c.isalnum():
-                    sbuf.write(u'\\')
+                    sbuf.write(u"\\")
                 sbuf.write(c)
         sbuf.write(u"$")
         s = sbuf.getvalue()
@@ -382,8 +354,7 @@ def _str_to_datetime(timestamp_str, ignore_case=False):
     # case-sensitivity for timestamp literals inside patterns and JSON
     # (for the "T" and "Z" chars).  So check case first.
     if not ignore_case and any(c.islower() for c in timestamp_str):
-        raise ValueError(u"Invalid timestamp format "
-                         u"(require upper case): {}".format(timestamp_str))
+        raise ValueError(u"Invalid timestamp format " u"(require upper case): {}".format(timestamp_str))
 
     # Can't create a pattern with an optional part... so use two patterns
     if u"." in timestamp_str:
@@ -416,7 +387,7 @@ def _ip_addr_to_int(ip_str):
     except socket.error:
         raise MatcherException(u"Invalid IPv4 address: {}".format(ip_str))
 
-    int_val, = struct.unpack(">I", ip_bytes)  # unsigned big-endian
+    (int_val,) = struct.unpack(">I", ip_bytes)  # unsigned big-endian
 
     return int_val
 
@@ -433,7 +404,7 @@ def _cidr_subnet_to_ints(subnet_cidr):
         raise MatcherException(u"Invalid CIDR subnet: {}".format(subnet_cidr))
 
     ip_str = subnet_cidr[:slash_idx]
-    prefix_str = subnet_cidr[slash_idx+1:]
+    prefix_str = subnet_cidr[slash_idx + 1 :]
 
     ip_int = _ip_addr_to_int(ip_str)
     if not prefix_str.isdigit():
@@ -465,8 +436,7 @@ def _ip_or_cidr_in_subnet(ip_or_cidr_str, subnet_cidr):
         containee_ip_int = _ip_addr_to_int(ip_or_cidr_str)
         containee_prefix_size = 32
     else:
-        containee_ip_int, containee_prefix_size = _cidr_subnet_to_ints(
-            ip_or_cidr_str)
+        containee_ip_int, containee_prefix_size = _cidr_subnet_to_ints(ip_or_cidr_str)
 
     container_ip_int, container_prefix_size = _cidr_subnet_to_ints(subnet_cidr)
 
@@ -474,8 +444,7 @@ def _ip_or_cidr_in_subnet(ip_or_cidr_str, subnet_cidr):
         return False
 
     # Use container mask for both IPs
-    container_mask = ((1 << container_prefix_size) - 1) << \
-                     (32 - container_prefix_size)
+    container_mask = ((1 << container_prefix_size) - 1) << (32 - container_prefix_size)
     masked_containee_ip = containee_ip_int & container_mask
     masked_container_ip = container_ip_int & container_mask
 

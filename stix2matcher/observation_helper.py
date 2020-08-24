@@ -19,10 +19,7 @@ def _disjoint(first_seq, *rest_seq):
 
     # is there a faster way to do this?
     fs = set(x for x in first_seq if x is not None)
-    return all(
-        fs.isdisjoint(x for x in seq if x is not None)
-        for seq in rest_seq
-    )
+    return all(fs.isdisjoint(x for x in seq if x is not None) for seq in rest_seq)
 
 
 # Constants used as return values of the _overlap() function.
@@ -176,10 +173,7 @@ def _filtered_combinations(value_generator, combo_size, pre_filter=None, post_fi
         raise ValueError(u"combo_size must be >= 1")
     elif combo_size == 1:
         # Each value is its own combo
-        yield from (
-            (value,) for value in value_generator
-            if post_filter is None or post_filter(value)
-        )
+        yield from ((value,) for value in value_generator if post_filter is None or post_filter(value))
         return
 
     # combo_size > 1
@@ -188,16 +182,9 @@ def _filtered_combinations(value_generator, combo_size, pre_filter=None, post_fi
 
     for next_value in value_generator:
         filtered_values = [
-            candidate
-            for candidate in generated_values
-            if pre_filter is None or pre_filter(candidate, next_value)
+            candidate for candidate in generated_values if pre_filter is None or pre_filter(candidate, next_value)
         ]
-        sub_combos = _filtered_combinations_from_list(
-            filtered_values,
-            combo_size - 1,
-            pre_filter,
-            post_filter,
-        )
+        sub_combos = _filtered_combinations_from_list(filtered_values, combo_size - 1, pre_filter, post_filter,)
 
         yield from (
             sub_combo + (next_value,)
@@ -222,25 +209,17 @@ def _filtered_combinations_from_list(value_list, combo_size, pre_filter=None, po
         raise ValueError(u"combo_size must be >= 1")
     elif combo_size == 1:
         # Each value is its own combo
-        yield from (
-            (value,) for value in value_list
-            if post_filter is None or post_filter(value)
-        )
+        yield from ((value,) for value in value_list if post_filter is None or post_filter(value))
         return
 
     for i in range(len(value_list) + 1 - combo_size):
         filtered_values = [
             candidate
-            for candidate in value_list[i + 1:]
+            for candidate in value_list[i + 1 :]
             if pre_filter is None or pre_filter(value_list[i], candidate)
         ]
 
-        sub_combos = _filtered_combinations_from_list(
-            filtered_values,
-            combo_size - 1,
-            pre_filter,
-            post_filter,
-        )
+        sub_combos = _filtered_combinations_from_list(filtered_values, combo_size - 1, pre_filter, post_filter,)
 
         yield from (
             (value_list[i],) + sub_combo
@@ -264,19 +243,15 @@ def _compute_expected_binding_size(ctx):
     elif isinstance(ctx, STIXPatternParser.ObservationExpressionRepeatedContext):
         # Guess I ought to correctly handle the repeat-qualified observation
         # expressions too huh?
-        child_count = _compute_expected_binding_size(
-            ctx.observationExpression())
-        rep_count = _literal_terminal_to_python_val(
-            ctx.repeatedQualifier().IntPosLiteral())
+        child_count = _compute_expected_binding_size(ctx.observationExpression())
+        rep_count = _literal_terminal_to_python_val(ctx.repeatedQualifier().IntPosLiteral())
 
         if rep_count < 1:
-            raise MatcherException(u"Invalid repetition count: {}".format(
-                rep_count))
+            raise MatcherException(u"Invalid repetition count: {}".format(rep_count))
 
         return child_count * rep_count
 
     else:
         # Not all node types have getChildren(), but afaict they all have
         # getChildCount() and getChild().
-        return sum(_compute_expected_binding_size(ctx.getChild(i))
-                   for i in range(ctx.getChildCount()))
+        return sum(_compute_expected_binding_size(ctx.getChild(i)) for i in range(ctx.getChildCount()))

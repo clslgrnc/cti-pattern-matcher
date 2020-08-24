@@ -125,22 +125,42 @@ def main():
     return_value = 0
 
     arg_parser = argparse.ArgumentParser(description="Match STIX Patterns to STIX Observed Data")
-    arg_parser.add_argument("-p", "--patterns", required=True,  help="""
+    arg_parser.add_argument(
+        "-p",
+        "--patterns",
+        required=True,
+        help="""
     Specify a file containing STIX Patterns, one per line.
-    """)
-    arg_parser.add_argument("-f", "--file", required=True, help="""
+    """,
+    )
+    arg_parser.add_argument(
+        "-f",
+        "--file",
+        required=True,
+        help="""
     A file containing JSON list of STIX observed-data SDOs to match against.
-    """)
-    arg_parser.add_argument("-e", "--encoding", default="utf8", help="""
+    """,
+    )
+    arg_parser.add_argument(
+        "-e",
+        "--encoding",
+        default="utf8",
+        help="""
     Set encoding used for reading observation and pattern files.
     Must be an encoding name Python understands.  Default is utf8.
-    """)
-    arg_parser.add_argument("-v", "--verbose", action="store_true",
-                            help="""Be verbose""")
-    arg_parser.add_argument("-q", "--quiet", action="count", help="""
+    """,
+    )
+    arg_parser.add_argument("-v", "--verbose", action="store_true", help="""Be verbose""")
+    arg_parser.add_argument(
+        "-q",
+        "--quiet",
+        action="count",
+        help="""
     Run quietly. One -q will only print out NO MATCH information. Two will
     produce no match-related output. This option does not affect the action
-    of -v, and error information will still be displayed.""", default=0)
+    of -v, and error information will still be displayed.""",
+        default=0,
+    )
 
     args = arg_parser.parse_args()
 
@@ -173,5 +193,5 @@ def main():
     return return_value
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
